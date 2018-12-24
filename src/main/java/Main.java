@@ -1,8 +1,10 @@
+import image.Image;
+
 public class Main {
     public static void main(String[] args){
         String pathToImage = "examples/image_without_message.bmp";
         Image img_test = new Image(pathToImage);
-        String message = "This is very cute image!";
+        String message = "So cute!";
         img_test.encode(message);
         img_test.save("examples/image_with_message.bmp");
 

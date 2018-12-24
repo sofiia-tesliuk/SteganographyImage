@@ -1,3 +1,5 @@
+package image;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -8,7 +10,6 @@ public class Image {
     private BufferedImage img = null;
     private File f = null;
     private PixelInImage pixel;
-    private String message;
 
     public Image(String path){
         try{
@@ -19,45 +20,41 @@ public class Image {
         }
     }
 
-
     public void encode(String message){
-        this.message = message;
         if (img != null){
             pixel = new PixelInImage(img);
+            for (int i = 0; i < 15; i++) {
+                pixel.encodeNextValue(message.length(), i*2);
+            }
+
             char c;
             for (int i = 0; i < message.length(); i++) {
                 c = message.charAt(i);
-                pixel.encodeR(c, 0);
-                pixel.encodeG(c, 2);
-                pixel.nextPixel();
-                pixel.encodeR(c, 4);
-                pixel.encodeG(c, 8);
-                pixel.nextPixel();
+                for (int j = 0; j < 4; j++) {
+                    pixel.encodeNextValue(c, j*2);
+                }
+                pixel.setNewRGB();
             }
         }
     }
 
-
-
     public String decode(){
         if (img != null){
             pixel = new PixelInImage(img);
-            char mess[] = new char[message.length()];
-            int first;
-            int second;
-            int third;
-            int fourth;
-            for (int i = 0; i < message.length(); i++) {
-                first = pixel.decodeR();
-                second = pixel.decodeB();
-                pixel.nextPixel();
-                third = pixel.decodeR();
-                fourth = pixel.decodeB();
-                pixel.nextPixel();
-                int c_int = (first << 6) | (second<<4) | (third<<2) | fourth;
-                mess[i] = (char) c_int;
+            int length = 0;
+            for (int i = 0; i < 15; i++) {
+                length |= pixel.decodeNextValue(i*2);
             }
-            return mess.toString();
+            char message[] = new char[length];
+            char c;
+            for (int i = 0; i < length; i++) {
+                c = 0;
+                for (int j = 0; j < 4; j++) {
+                    c |= pixel.decodeNextValue(j*2);
+                }
+                message[i] = c;
+            }
+            return String.valueOf(message);
 
         }
         return "ERROR: Image not found.";
